@@ -1,10 +1,12 @@
+import LayoutRenderer from "./components/LayoutRenderer";
+import mockResponse from "./mockSymbolData.json";
+
 function App() {
   return (
-    <div className="h-screen bg-gray-100 flex flex-col justify-center items-center">
-      <h1 className="text-4xl font-bold text-blue-600">Hello Tailwind</h1>
-      <p className="mt-4 text-gray-700">Tailwind CSS is working!</p>
+    <div className="min-h-screen bg-gray-100">
+      <LayoutRenderer layout={mockResponse.layout} data={mockResponse} />
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
