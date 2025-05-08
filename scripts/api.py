@@ -8,11 +8,14 @@ import os
 import json
 import re
 from fastapi.middleware.cors import CORSMiddleware
+from typing import List
+import time
+
+MAX_MEMORY = 500 #can be changed later to limit the longterm_memory.json's size
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 app = FastAPI()
 
-# Enable CORS for frontend
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173"],
@@ -21,18 +24,32 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Load vector database & metadata
+# Load metadata
+with open("data/metadata.pkl", "rb") as f:
+    metadata = pickle.load(f)
+
 embedding_matrix = np.load("data/embeddings.npy")
 faiss_index = faiss.IndexFlatL2(embedding_matrix.shape[1])
 faiss_index.add(embedding_matrix)
 
-with open("data/metadata.pkl", "rb") as f:
-    metadata = pickle.load(f)
+# Load or initialize long-term memory
+longterm_path = "data/longterm_memory.json"
+if os.path.exists(longterm_path):
+    with open(longterm_path, "r", encoding="utf-8") as f:
+        longterm_memory = json.load(f)
+else:
+    longterm_memory = []
 
 class QuestionRequest(BaseModel):
     question: str
+    
+    
+# calculate the similarity score a: user input b: longterm_memory
+def cosine_similarity(a: np.ndarray, b: np.ndarray) -> float:
+    a_norm = a / np.linalg.norm(a)
+    b_norm = b / np.linalg.norm(b)
+    return np.dot(a_norm, b_norm)
 
-# parse structured JSON
 def try_parse_structured_json(raw: str):
     if "```json" in raw:
         match = re.search(r"```json(.*?)```", raw, re.DOTALL)
@@ -85,15 +102,35 @@ Always return valid JSON. No explanation. No markdown.
 
 @app.post("/ask")
 def ask_question(request: QuestionRequest):
-    
-    response = openai.embeddings.create(
+    global longterm_memory
+
+    # 1. embedding the current question
+    embedding_response = openai.embeddings.create(
         model="text-embedding-3-small",
         input=request.question
     )
-    query_vector = np.array([response.data[0].embedding], dtype="float32")
+    query_vector = np.array(embedding_response.data[0].embedding, dtype="float32")
 
-    # Search relevant chunks
-    D, I = faiss_index.search(query_vector, k=5)
+    # 2. search longterm_memory.json first
+    best_match = None
+    best_score = 0
+    for entry in longterm_memory:
+        memory_vector = np.array(entry["embedding"], dtype="float32")
+        score = cosine_similarity(query_vector, memory_vector)
+        if score > best_score:
+            best_score = score
+            best_match = entry
+
+    if best_match and best_score > 0.93:
+        # hit
+        best_match["count"] += 1
+        best_match["last_used"] = time.time()
+        with open(longterm_path, "w", encoding="utf-8") as f:
+            json.dump(longterm_memory, f, indent=2, ensure_ascii=False)
+        return best_match["data"]
+
+    # 3. not hit --> model: gpt 4o
+    D, I = faiss_index.search(query_vector.reshape(1, -1), k=5)
     relevant_chunks = [metadata[i] for i in I[0]]
 
     context = "\n---\n".join(
@@ -119,5 +156,23 @@ def ask_question(request: QuestionRequest):
         {"page": chunk["page"], "content": chunk["content"][:300]}
         for chunk in relevant_chunks
     ]
+
+    # 4. add the new long-term memory entry
+    new_entry = {
+        "question": request.question,
+        "embedding": query_vector.tolist(),
+        "data": structured_data,
+        "count": 1,
+        "last_used": time.time()
+    }
+    longterm_memory.append(new_entry)
+
+    # 5. Use LRU to clean up the memory
+    if len(longterm_memory) > MAX_MEMORY:
+        longterm_memory.sort(key=lambda x: x.get("last_used", 0))
+        longterm_memory = longterm_memory[-MAX_MEMORY:]
+
+    with open(longterm_path, "w", encoding="utf-8") as f:
+        json.dump(longterm_memory, f, indent=2, ensure_ascii=False)
 
     return structured_data
