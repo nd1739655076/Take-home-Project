@@ -1,13 +1,37 @@
 // src/components/SymbolList.jsx
-import SymbolCard from "./SymbolCard";
+
+import { useState } from "react";
+import SymbolDetail from "./SymbolDetail";
 
 export default function SymbolList({ data }) {
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const selectedSymbol = data[selectedIndex];
+
   return (
-    <div className="px-6 py-10 max-w-4xl mx-auto">
-      <h1 className="text-3xl font-bold text-gray-800 mb-6"> Symbol Analysis</h1>
-      {data.map((symbol, index) => (
-        <SymbolCard key={index} symbol={symbol} />
-      ))}
+    <div className="px-4 py-8 max-w-5xl mx-auto space-y-6">
+      <h1 className="text-3xl font-bold text-center text-gray-800 mb-4">
+        Important Symbols in The Great Gatsby
+      </h1>
+
+      {/* Tab selector */}
+      <div className="flex flex-wrap justify-center gap-3 mb-4">
+        {data.map((symbol, idx) => (
+          <button
+            key={idx}
+            onClick={() => setSelectedIndex(idx)}
+            className={`px-4 py-2 rounded-full text-sm font-medium border transition ${
+              selectedIndex === idx
+                ? "bg-blue-600 text-white"
+                : "bg-white text-blue-600 border-blue-600"
+            }`}
+          >
+            {symbol.name}
+          </button>
+        ))}
+      </div>
+
+      {/* Detail view */}
+      <SymbolDetail symbol={selectedSymbol} />
     </div>
   );
 }

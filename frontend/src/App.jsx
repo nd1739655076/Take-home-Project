@@ -1,12 +1,6 @@
-import LayoutRenderer from "./components/LayoutRenderer";
-import mockResponse from "./mockSymbolData.json";
+// src/App.jsx
+import HomePage from "./pages/Home";
 
-function App() {
-  return (
-    <div className="min-h-screen bg-gray-100">
-      <LayoutRenderer layout={mockResponse.layout} data={mockResponse} />
-    </div>
-  );
+export default function App() {
+  return <HomePage />;
 }
-
-export default App;
