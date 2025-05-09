@@ -44,9 +44,16 @@ class QuestionRequest(BaseModel):
 def normalize_question(question: str) -> str:
     try:
         completion = openai.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model="gpt-4o",
             messages=[
-                {"role": "system", "content": "You rewrite user input into a complete, formal, standalone question."},
+                {"role": "system", 
+                 "content": (
+                        "You are helping rewrite user questions into complete, formal, standalone questions "
+                        "specifically about *The Great Gatsby*. "
+                        "Avoid generalizations about literature, film, or other media. Keep the rewritten question "
+                        "focused strictly on The Great Gatsby."
+                  )
+                },
                 {"role": "user", "content": question}
             ],
             temperature=0.0
@@ -79,6 +86,8 @@ def llm_is_equivalent(q1: str, q2: str) -> bool:
 You are deciding whether two user questions can be answered using the exact same content in a Q&A system about the same book.
 
 If the two questions refer to the same domain (e.g. same novel, topic, or scope) and are requesting substantially the same information—even if phrased differently—they should be considered equivalent.
+Only answer "yes" if the two questions can be answered using exactly the same information from *The Great Gatsby*.
+Do not assume they refer to other books, literature, film, or television unless explicitly stated in both questions.
 
 Q1: {q1}
 Q2: {q2}
@@ -137,7 +146,7 @@ def try_parse_structured_json(raw: str):
             pass
     return parsed
 
-layout_instruction = """
+layout_instruction = layout_instruction = """
 You are a JSON-only structured assistant for The Great Gatsby.
 
 Based on the user's question and the context, identify the correct layout type:
@@ -146,24 +155,101 @@ Based on the user's question and the context, identify the correct layout type:
 - "symbol_list"
 - "quote_analysis"
 - "summary"
+- "theme"
 - "context_paragraph" (default)
 
 For each layout, respond with a strict JSON object matching this structure:
 
-- character_cards: { "layout": "character_cards", "cards": [ { "name": ..., "description": ..., "relationship_to_protagonist": ..., "personality_traits": [...], "key_actions": [...], "quote": ..., "page": ..., "narrative_role": ... } ] }
+- character_cards: {
+    "layout": "character_cards",
+    "cards": [
+      {
+        "name": ...,
+        "description": ...,
+        "relationship_to_protagonist": ...,
+        "personality_traits": [...],
+        "key_actions": [...],
+        "quote": ...,
+        "page": ...,
+        "narrative_role": ...
+      }
+    ]
+  }
 
-- timeline: { "layout": "timeline", "title": "...", "events": [ { "year": "...", "month": "...", "day": "...", "event": "...", "page": ... } ] }
+- timeline: {
+    "layout": "timeline",
+    "title": "...",
+    "events": [
+      { "year": "...", "month": "...", "day": "...", "event": "...", "page": ... }
+    ]
+  }
 
-- symbol_list: { "layout": "symbol_list", "symbols": [ { "name": "...", "description": "...", "meaning": "...", "key_quote": "...", "page": ..., "references": [ { "description": "...", "page": ... } ] } ] }
+- symbol_list: {
+    "layout": "symbol_list",
+    "symbols": [
+      {
+        "name": "...",
+        "description": "...",
+        "meaning": "...",
+        "key_quote": "...",
+        "page": ...,
+        "references": [
+          { "description": "...", "page": ... }
+        ]
+      }
+    ]
+  }
 
-- quote_analysis: { "layout": "quote_analysis", "quote": "...", "speaker": "...", "chapter": "...", "page": ..., "interpretation": "...", "themes": [...], "significance": "..." }
+- quote_analysis: {
+    "layout": "quote_analysis",
+    "quote": "...",
+    "speaker": "...",
+    "chapter": "...",
+    "page": ...,
+    "interpretation": "...",
+    "themes": [...],
+    "significance": "..."
+  }
 
-- summary: { "layout": "summary", "title": "...", "chapter": "...", "summary_points": [ ... ], "theme": "..." }
+- summary: {
+    "layout": "summary",
+    "title": "...",
+    "chapter": "...",
+    "summary_points": [ ... ],
+    "theme": "..."
+  }
 
-- context_paragraph: { "layout": "context_paragraph", "title": "Answer", "context": "..." }
+- theme: {
+    "layout": "theme",
+    "title": "...",
+    "themes": [
+      {
+        "name": "...",
+        "description": "...",
+        "examples": [
+          { "quote": "...", "page": ... }
+        ],
+        "related_characters": ["...", "..."]
+      }
+    ]
+  }
+
+- context_paragraph: {
+    "layout": "context_paragraph",
+    "title": "Answer",
+    "context": "...",
+    "quotes": [
+      {
+        "quote": "...",
+        "page": ...
+      },
+      ...
+    ]
+  }
 
 Always return valid JSON. No explanation. No markdown.
 """
+
 
 @app.post("/ask")
 def ask_question(request: QuestionRequest):

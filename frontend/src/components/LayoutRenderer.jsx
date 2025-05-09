@@ -4,6 +4,8 @@ import SymbolList from "./SymbolList";
 import TimelineLayout from "./TimelineLayout";
 import QuoteAnalysis from "./QuoteAnalysis";
 import SummaryCardList from "./SummaryCardList";
+import ContextParagraphCard from "./ContextParagraphCard";
+import ThemeCardList from "./ThemeCardList";
 
 export default function LayoutRenderer({ layout, data }) {
   switch (layout) {
@@ -17,7 +19,9 @@ export default function LayoutRenderer({ layout, data }) {
       return <QuoteAnalysis data={data} />;
     case "summary":
       return <SummaryCardList data={data} />;
+    case "theme":
+      return <ThemeCardList data={data} />
     default:
-      return <p className="text-red-500">Unsupported layout: {layout}</p>;
+      return <ContextParagraphCard data={data} />;
   }
 }

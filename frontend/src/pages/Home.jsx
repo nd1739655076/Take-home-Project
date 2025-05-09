@@ -53,41 +53,39 @@ export default function Home() {
         <div className="min-h-screen bg-gray-50 flex flex-col pb-28">
             <Navbar />
 
-            {/* header */}
-            <div className="flex-1 flex flex-col justify-start items-center px-4 pt-8">
+            <div className="flex-1 flex flex-col justify-center items-center px-4">
+                {/* homepage with title and examples */}
                 {!hasAsked && (
-                    <div className="text-center mb-8">
-                        <h1 className="text-3xl font-bold text-blue-600">
-                            Ask Me About <span className="text-blue-800">"The Great Gatsby"</span>
+                    <div className="flex flex-col items-center justify-center text-center max-w-2xl pt-10 pb-6 space-y-6">
+                        <h1 className="text-4xl sm:text-5xl font-extrabold text-blue-700 leading-snug">
+                            Ask Me About <br />
+                            <span className="text-blue-900">"The Great Gatsby"</span>
                         </h1>
-                        <p className="text-sm text-gray-600 mt-2">
+                        <p className="text-sm sm:text-base text-gray-600">
                             Type a question about character, symbols, or plot points from the novel
                         </p>
-                    </div>
-                )}
 
-                {/* example prompts */}
-                {!hasAsked && (
-                    <div className="flex flex-wrap justify-center gap-4 mb-10">
-                        {[
-                            "Tell me about Gatsby’s life and experiences",
-                            "Tell me about the women characters in the book",
-                            "What are the major symbols in The Great Gatsby",
-                        ].map((q, idx) => (
-                            <button
-                                key={idx}
-                                onClick={() => setQuestion(q)}
-                                className="bg-white px-4 py-3 rounded-lg shadow hover:bg-blue-50 text-sm text-gray-700 border w-64 text-left"
-                            >
-                                <span className="block text-blue-700 font-semibold">Ask about:</span>
-                                <span className="block mt-1 text-gray-800 italic">“{q}”</span>
-                            </button>
-                        ))}
+                        <div className="flex flex-wrap justify-center gap-4">
+                            {[
+                                "Tell me about Gatsby’s life and experiences",
+                                "Tell me about the women characters in the book",
+                                "What are the major symbols in The Great Gatsby",
+                            ].map((q, idx) => (
+                                <button
+                                    key={idx}
+                                    onClick={() => setQuestion(q)}
+                                    className="bg-white px-4 py-3 rounded-lg shadow hover:bg-blue-50 text-sm text-gray-700 border w-72 text-left"
+                                >
+                                    <span className="block text-blue-700 font-semibold">Ask about:</span>
+                                    <span className="block mt-1 text-gray-800 italic">“{q}”</span>
+                                </button>
+                            ))}
+                        </div>
                     </div>
                 )}
 
                 {/* chat history */}
-                <div className="w-full max-w-5xl space-y-6">
+                <div className="w-full max-w-5xl space-y-6 pb-10">
                     {conversation.map((item, index) =>
                         item.type === "user" ? (
                             <div key={index} className="text-right">
