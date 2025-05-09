@@ -11,20 +11,22 @@ export default function Home() {
 
     useEffect(() => {
         if (hasAsked) {
-          window.scrollTo({ top: 0, behavior: "smooth" });
+            window.scrollTo({ top: 0, behavior: "smooth" });
         }
-      }, [hasAsked]);
-      useEffect(() => {
+    }, [hasAsked]);
+
+    useEffect(() => {
         if (responseData) {
-          console.log("📦 Response Data:", responseData);
+            console.log(" Response Data:", responseData);
         }
-      }, [responseData]);
+    }, [responseData]);
 
     const handleAsk = async () => {
         if (!question.trim()) return;
 
         const userMessage = { type: "user", content: question };
         setConversation((prev) => [...prev, userMessage]);
+        setQuestion("");
         setLoading(true);
         setResponseData(null);
         setHasAsked(true);
@@ -45,49 +47,51 @@ export default function Home() {
         }
 
         setLoading(false);
-        setQuestion("");
     };
 
-
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col">
+        <div className="min-h-screen bg-gray-50 flex flex-col pb-28">
             <Navbar />
 
             {/* header */}
-            <div className="flex-1 flex flex-col justify-center items-center px-4">
-                {!hasAsked && (<div className="text-center mb-8">
-                    <h1 className="text-3xl font-bold text-blue-600">
-                        Ask Me About <span className="text-blue-800">"The Great Gatsby"</span>
-                    </h1>
-                    <p className="text-sm text-gray-600 mt-2">
-                        Type a question about character, symbols, or plot points from the novel
-                    </p>
-                </div>
+            <div className="flex-1 flex flex-col justify-start items-center px-4 pt-8">
+                {!hasAsked && (
+                    <div className="text-center mb-8">
+                        <h1 className="text-3xl font-bold text-blue-600">
+                            Ask Me About <span className="text-blue-800">"The Great Gatsby"</span>
+                        </h1>
+                        <p className="text-sm text-gray-600 mt-2">
+                            Type a question about character, symbols, or plot points from the novel
+                        </p>
+                    </div>
                 )}
 
-                <div className="flex flex-wrap justify-center gap-4 mb-10">
-                    {[
-                        "Tell me about Gatsby’s life and experiences",
-                        "Tell me about the women characters in the book",
-                        "What are the major symbols in The Great Gatsby",
-                    ].map((q, idx) => (
-                        <button
-                            key={idx}
-                            onClick={() => setQuestion(q)}
-                            className="bg-white px-4 py-3 rounded-lg shadow hover:bg-blue-50 text-sm text-gray-700 border w-64 text-left"
-                        >
-                            <span className="block text-blue-700 font-semibold">Ask about:</span>
-                            <span className="block mt-1 text-gray-800 italic">“{q}”</span>
-                        </button>
-                    ))}
-                </div>
+                {/* example prompts */}
+                {!hasAsked && (
+                    <div className="flex flex-wrap justify-center gap-4 mb-10">
+                        {[
+                            "Tell me about Gatsby’s life and experiences",
+                            "Tell me about the women characters in the book",
+                            "What are the major symbols in The Great Gatsby",
+                        ].map((q, idx) => (
+                            <button
+                                key={idx}
+                                onClick={() => setQuestion(q)}
+                                className="bg-white px-4 py-3 rounded-lg shadow hover:bg-blue-50 text-sm text-gray-700 border w-64 text-left"
+                            >
+                                <span className="block text-blue-700 font-semibold">Ask about:</span>
+                                <span className="block mt-1 text-gray-800 italic">“{q}”</span>
+                            </button>
+                        ))}
+                    </div>
+                )}
 
                 {/* chat history */}
                 <div className="w-full max-w-5xl space-y-6">
                     {conversation.map((item, index) =>
                         item.type === "user" ? (
                             <div key={index} className="text-right">
-                                <div className="inline-block bg-blue-100 text-blue-800 px-4 py-2 rounded-lg shadow text-sm">
+                                <div className="inline-block bg-white text-gray-900 px-4 py-2 rounded-2xl shadow-md text-base font-sans">
                                     {item.content}
                                 </div>
                             </div>
@@ -104,7 +108,7 @@ export default function Home() {
             </div>
 
             {/* input */}
-            <div className="bg-gray-50 py-4 px-4">
+            <div className="fixed bottom-0 left-0 w-full bg-gray-50 py-4 px-4 border-t shadow-inner z-10">
                 <div className="max-w-xl mx-auto flex items-center gap-2">
                     <input
                         type="text"
@@ -112,7 +116,7 @@ export default function Home() {
                         onChange={(e) => setQuestion(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && handleAsk()}
                         placeholder="Ask a question about the book..."
-                        className="flex-1 p-3 rounded-full border border-gray-400 shadow-sm text-sm"
+                        className="flex-1 p-3 rounded-full border border-gray-300 shadow-sm text-sm font-sans"
                     />
                     <button
                         onClick={handleAsk}

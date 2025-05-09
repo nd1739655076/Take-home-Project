@@ -3,6 +3,7 @@ import CharacterCardList from "./CharacterCardList";
 import SymbolList from "./SymbolList";
 import TimelineLayout from "./TimelineLayout";
 import QuoteAnalysis from "./QuoteAnalysis";
+import SummaryCardList from "./SummaryCardList";
 
 export default function LayoutRenderer({ layout, data }) {
   switch (layout) {
@@ -11,9 +12,11 @@ export default function LayoutRenderer({ layout, data }) {
     case "character_cards":
       return <CharacterCardList data={data} />;
     case "timeline":
-      return <TimelineLayout data={data} />
+      return <TimelineLayout data={data} />;
     case "quote_analysis":
-      return <QuoteAnalysis data={data} />
+      return <QuoteAnalysis data={data} />;
+    case "summary":
+      return <SummaryCardList data={data} />;
     default:
       return <p className="text-red-500">Unsupported layout: {layout}</p>;
   }
