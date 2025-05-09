@@ -3,7 +3,8 @@
 ## Main Idea
 
 *  **"Long-Term Memory Room Metaphor"**
-	* Previously asked question and GPT responses are cached in `longterm_memory.json` (including the pretraining)
+	* Previously asked question and GPT responses are cached in `longterm_memory.json` (including the pertaining)
+	* The main backend logic is in `/scripts/api.py`.
 	* Matching is determined via vector similarity, keyword overlap, and fallback LLM equivalence.
 	* Each user input is a pretraining -- the conversation will first look for a match to `longterm_memory.json`, and if there is no match or the similarity value is too low, it will be answered using the `GPT-4o` model, and the answer will be added to the `longterm_memory.json` file
 	* While it's not perfectly to answer within five seconds for every question (because there are times when answers not in `longterm_memory.json` will use the 4o model), the average response time can be controlled within five seconds, and the front-end rendering won't take more than a second. With more users ask more questions, the response time (especially for those hot question) can be very fast with the growth of the long-term memory room.
